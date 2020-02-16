@@ -179,8 +179,10 @@ Returns an array of parameters (`oasa_param` objects) supported.
 
 Takes a server, a set of parameter values, a content type and a
 body, and attempts to form a complete request for the operation. The return value
-is an object with `method`, `url`, `body` and `content_type` keys, everything
-required to make a request.
+is an object with `method`, `url`, `body`, `headers` and `cookies` keys. In order
+to make a request, some HTTP client of choice should be invoked and the method, the
+URL, the body, headers and cookies must all be used in the request. Additional
+headers and cookies may of course be included as well.
 
 For example:
 
@@ -195,7 +197,12 @@ let req_info = dog_eat_op.request(
 
 The `req_info` object `url` may be something like
 `https://some.server/api/v1/dogs/scoobydoo/eat?speed=8` with a `method` of `PUT`
-and a `body` of `{"food": "scoobysnack"}`. Something like that.
+and a `body` of `{"food": "scoobysnack"}`. Something like that. The `headers`
+value in this case will at least be `{'Content-Type': 'application/json'}` but
+if some provided parameters are 'header parameters' then there may be more, and
+if no content type is given then it could be simply `{}`. Similarly `cookies`
+may minimally be `{}` but given cookie parameters there will be key value pairs
+included.
 
 The parameters key value pairs are the name and value of value parameters
 for the operation. Unknown/unexpected parameters are ignored.

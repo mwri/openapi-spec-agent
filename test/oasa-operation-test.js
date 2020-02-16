@@ -230,6 +230,8 @@ describe('oasa_operation', function () {
                 {'name': 'foo', 'in': 'query'},
                 {'name': 'bar', 'in': 'query'},
                 {'name': 'baz', 'in': 'path'},
+                {'name': 'bat', 'in': 'header'},
+                {'name': 'bah', 'in': 'cookie'},
             ]};
         });
 
@@ -315,6 +317,38 @@ describe('oasa_operation', function () {
                 (new oasa_operation(this._spec, this._op_oasd, 'path1', 'post'))
                     .request('http://server1/xx/yy', {}, 'application/octet-stream', 'binary_body').body,
                 'binary_body'
+            );
+        });
+
+        it('adds the content type to headers if set', function () {
+            assert.equal(
+                (new oasa_operation(this._spec, this._op_oasd, 'path1', 'post'))
+                    .request('http://server1/xx/yy', {}, 'some/type', 'body').headers['Content-Type'],
+                'some/type'
+            );
+        });
+
+        it('adds no content type to headers if not set', function () {
+            assert.equal(
+                (new oasa_operation(this._spec, this._op_oasd, 'path1', 'post'))
+                    .request('http://server1/xx/yy', {}, undefined, 'body').headers['Content-Type'],
+                undefined
+            );
+        });
+
+        it('adds header parameters to headers if given', function () {
+            assert.deepEqual(
+                (new oasa_operation(this._spec, this._op_oasd, 'path1', 'post'))
+                    .request('http://server1/xx/yy', {'foo': 'fooval', 'bat': 'batval'}, 'some/type', 'body').headers,
+                {'bat': 'batval', 'Content-Type': 'some/type'}
+            );
+        });
+
+        it('adds cookie parameters to cookies if given', function () {
+            assert.deepEqual(
+                (new oasa_operation(this._spec, this._op_oasd, 'path1', 'post'))
+                    .request('http://server1/xx/yy', {'foo': 'fooval', 'bah': 'bahval'}, 'some/type', 'body').cookies,
+                {'bah': 'bahval'}
             );
         });
     });
