@@ -152,6 +152,26 @@ describe('oasa_operation', function () {
         });
     });
 
+    describe('status_response', function () {
+        it('returns undefined if there is no response for the specified status', function () {
+            let spec = new oasa_spec(this._min_sample_oasd);
+            let op   = new oasa_operation(spec, {'tags': ['tag1', 'tag2']}, '/path1', 'get');
+            assert.equal(op.status_response(444), undefined);
+        });
+
+        it('returns a oasa_response object', function () {
+            let spec = new oasa_spec(this._min_sample_oasd);
+            let op   = new oasa_operation(spec, {'responses': {'200': {}, '400': {}}}, '/path1', 'get');
+            assert(op.status_response(200) instanceof oasa_response);
+        });
+
+        it('returns specified response', function () {
+            let spec = new oasa_spec(this._min_sample_oasd);
+            let op   = new oasa_operation(spec, {'responses': {'200': {}, '400': {}}}, '/path1', 'get');
+            assert.equal(op.status_response(200).status(), 200);
+        });
+    });
+
     describe('security', function () {
         this.beforeEach(function () {
             this._min_sample_oasd.components = {'securitySchemes': {'secscheme_name': []}};
