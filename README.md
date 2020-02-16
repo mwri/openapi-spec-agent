@@ -88,6 +88,15 @@ Returns the specification title.
 
 Returns an array of operations (`oasa_operation` objects).
 
+##### named_operation
+
+Returns the named operation (`oasa_operation` object), or `undefined` if it
+does not exist.
+
+```javascript
+let op = spec.named_operation('get_the_thing');
+```
+
 ##### resolve_ref
 
 Takes a reference (for example *#/components/schemas/Pet*) and
@@ -142,6 +151,15 @@ none.
 
 Returns an array of responses (`oasa_response` objects), each being a
 possible response for the operation.
+
+##### status_response
+
+Returns the response (`oasa_response` object) for the given status
+code, or `undefined` if there isn't one.
+
+```javascript
+let res = op.status_operation(200);
+```
 
 ##### security
 
@@ -272,6 +290,15 @@ Returns a list of just the mandatory properties in the schema (a list of
 
 Returns a list of just the optional properties in the schema (a list of
 `oasa_property` objects).
+
+##### named_prop
+
+Return a the named property (`oasa_property` object), or `undefined` if
+there is no such property.
+
+```javascript
+let prop = schema.named_prop('prop_name');
+```
 
 ##### of
 
