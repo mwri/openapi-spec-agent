@@ -137,6 +137,26 @@ describe('oasa_schema', function () {
             });
         });
 
+        describe('named_prop', function () {
+            it('returns undefined when the schema has no property with the specified name', function () {
+                let schema = new oasa_schema(this._spec, this._schema_oasd);
+                assert.equal(schema.named_prop('noexists'), undefined);
+                assert.equal(schema.named_prop('nonsense'), undefined);
+            });
+
+            it('returns a property', function () {
+                let schema = new oasa_schema(this._spec, this._schema_oasd);
+                assert(schema.named_prop('must') instanceof oasa_property);
+                assert(schema.named_prop('maybe') instanceof oasa_property);
+            });
+
+            it('returns specified property', function () {
+                let schema = new oasa_schema(this._spec, this._schema_oasd);
+                assert.equal(schema.named_prop('must').name(), 'must');
+                assert.equal(schema.named_prop('maybe').name(), 'maybe');
+            });
+        });
+
         describe('of', function () {
             it('throws', function () {
                 let schema = new oasa_schema(this._spec, this._schema_oasd);
