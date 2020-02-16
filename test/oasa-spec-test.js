@@ -227,4 +227,32 @@ describe('oasa_spec', function () {
                 assert(op instanceof oasa_operation);
         });
     });
+
+    describe('named_operation', function () {
+        beforeEach(function () {
+            this._oasd = {
+                'openapi': '3.0.0',
+                'paths': {
+                    '/path1': {
+                        'get': {
+                            'operationId': 'get_it',
+                        },
+                    },
+                },
+            };
+            this._spec = new oasa_spec(this._oasd);
+        });
+
+        it('returns undefined if the specified operation does not exist', function () {
+            assert.equal(this._spec.named_operation('noexists'), undefined);
+        });
+
+        it('returns an oasa_operation object', function () {
+            assert(this._spec.named_operation('get_it') instanceof oasa_operation);
+        });
+
+        it('returns the specified operation', function () {
+            assert.equal(this._spec.named_operation('get_it').id(), 'get_it');
+        });
+    });
 });
