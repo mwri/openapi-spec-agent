@@ -540,4 +540,30 @@ describe('oasa_property', function () {
             });
         });
     });
+
+    describe('read_only', function () {
+        beforeEach(function () {
+            this._spec = new oasa_spec(min_sample_oasd);
+        });
+
+        it('returns a boolean', function () {
+            let prop = new oasa_property(this._spec, {'readOnly': true}, 'propname');
+            assert.equal(typeof prop.read_only(), 'boolean');
+        });
+
+        it('returns true if property read only', function () {
+            let prop = new oasa_property(this._spec, {'readOnly': true}, 'propname');
+            assert.equal(prop.read_only(), true);
+        });
+
+        it('returns false if property not read only', function () {
+            let prop = new oasa_property(this._spec, {'readOnly': false}, 'propname');
+            assert.equal(prop.read_only(), false);
+        });
+
+        it('returns false by default', function () {
+            let prop = new oasa_property(this._spec, {}, 'propname');
+            assert.equal(prop.read_only(), false);
+        });
+    });
 });
