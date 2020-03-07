@@ -248,7 +248,6 @@ describe('oasa_schema', function () {
             it('returns an oasa_object with array properties of the source data', function () {
                 let obj = this._schema.interpret(this._data);
                 assert(obj instanceof oasa_object);
-                console.log(obj);
                 assert(obj.prop('sub_array') instanceof Array);
             });
 
@@ -429,6 +428,23 @@ describe('oasa_property', function () {
         it('given spec, name and property def, returns oasa_property object', function () {
             assert(new oasa_property(this._spec, {}, 'propname') instanceof oasa_property);
         });
+
+    });
+
+    it('reference to schema works', function () {
+        let spec = new oasa_spec({
+            'openapi': '3.0.0',
+            'components': {
+                'schemas': {
+                    'propschema': {
+                        'type': 'object',
+                    },
+                },
+            },
+        });
+        let prop = new oasa_property(spec, {'$ref': '#/components/schemas/propschema'}, 'propname');
+        assert(prop instanceof oasa_property);
+        assert.equal(prop.type(), 'object');
     });
 
     describe('name', function () {
