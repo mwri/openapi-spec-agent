@@ -1,5 +1,6 @@
 const lodash = require('lodash');
 const assert = require('assert');
+const sinon  = require('sinon');
 
 const oasa_spec     = require('./../lib/oasa-spec.js').oasa_spec;
 const oasa_schema   = require('./../lib/oasa-schema.js').oasa_schema;
@@ -22,10 +23,6 @@ describe('oasa_schema', function () {
             assert.throws(() => new oasa_schema(new oasa_spec(min_sample_oasd)));
         });
 
-        it('throws if schema has no type', function () {
-            assert.throws(() => new oasa_schema(new oasa_spec(min_sample_oasd), {}));
-        });
-
         it('throws if schema has invalid type', function () {
             assert.throws(() => new oasa_schema(new oasa_spec(min_sample_oasd), {'type': 'bad'}));
             assert.throws(() => new oasa_schema(new oasa_spec(min_sample_oasd), {'type': 'invalid'}));
@@ -40,6 +37,52 @@ describe('oasa_schema', function () {
         });
     });
 
+    describe('path', function () {
+        it('returns /schema for an empty unnamed schema', function () {
+            this._spec = new oasa_spec(min_sample_oasd);
+            let schema = new oasa_schema(this._spec, {});
+            assert.equal(schema.path(), '/schema');
+        });
+
+        it('returns /schema:name for an empty named schema', function () {
+            this._spec = new oasa_spec(min_sample_oasd);
+            let schema = new oasa_schema(this._spec, {}, 'foobar');
+            assert.equal(schema.path(), '/schema:foobar');
+        });
+
+        it('returns /schema:name/prop:name for a traversed sub property schema', function () {
+            this._spec = new oasa_spec(min_sample_oasd);
+            let schema = new oasa_schema(this._spec, {'type': 'object', 'properties': {'bar': {}}}, 'foo');
+            assert.equal(schema.named_prop('bar').schema().path(), '/schema:foo/prop:bar');
+        });
+    });
+
+    describe('interpret', function () {
+        it('logs a warning when debug enabled and non array data found by array schema', function () {
+            let logfn = sinon.spy();
+            this._spec = new oasa_spec(min_sample_oasd, {'debug': logfn});
+            let schema = new oasa_schema(this._spec, {'type': 'array'});
+            schema.interpret({});
+            assert(logfn.called);
+        });
+
+        it('does not og a warning when debug enabled and array data found by array schema', function () {
+            let logfn = sinon.spy();
+            this._spec = new oasa_spec(min_sample_oasd, {'debug': logfn});
+            let schema = new oasa_schema(this._spec, {'type': 'array'});
+            schema.interpret([]);
+            assert(!logfn.called);
+        });
+
+        it('does not log a warning when debug not enabled', function () {
+            let logfn = sinon.spy();
+            this._spec = new oasa_spec(min_sample_oasd);
+            let schema = new oasa_schema(this._spec, {'type': 'array'});
+            schema.interpret({});
+            assert(!logfn.called);
+        });
+    });
+
     describe('with object schema', function () {
         beforeEach(function () {
             this._spec = new oasa_spec(min_sample_oasd);
@@ -51,6 +94,10 @@ describe('oasa_schema', function () {
                     'mandatory': {'type': 'string'},
                     'maybe': {'type': 'string'},
                     'optional': {'type': 'string'},
+                    'sub_object': {'type': 'object'},
+                    'sub_array': {'type': 'array'},
+                    'sub_bool': {'type': 'boolean'},
+                    'sub_num': {'type': 'number'},
                 },
             };
         });
@@ -115,7 +162,7 @@ describe('oasa_schema', function () {
                 let schema = new oasa_schema(this._spec, this._schema_oasd);
                 assert.deepEqual(
                     schema.all_props().map((p) => p.name()).sort(),
-                    ['must', 'mandatory', 'maybe', 'optional'].sort()
+                    ['must', 'mandatory', 'maybe', 'optional', 'sub_object', 'sub_array', 'sub_bool', 'sub_num'].sort()
                 );
             });
         });
@@ -132,7 +179,7 @@ describe('oasa_schema', function () {
                 let schema = new oasa_schema(this._spec, this._schema_oasd);
                 assert.deepEqual(
                     schema.optional_props().map((p) => p.name()).sort(),
-                    ['maybe', 'optional'].sort()
+                    ['maybe', 'optional', 'sub_object', 'sub_array', 'sub_bool', 'sub_num'].sort()
                 );
             });
         });
@@ -172,6 +219,10 @@ describe('oasa_schema', function () {
                     'mandatory': 'bar1',
                     'maybe': 'baz1',
                     'optional': 'bat1',
+                    'sub_object': {},
+                    'sub_array': [],
+                    'sub_bool': true,
+                    'sub_num': 11,
                 };
             });
 
@@ -179,12 +230,38 @@ describe('oasa_schema', function () {
                 assert(this._schema.interpret(this._data) instanceof oasa_object);
             });
 
-            it('returns an oasa_object with properties of the source data', function () {
+            it('returns an oasa_object with string properties of the source data', function () {
                 let obj = this._schema.interpret(this._data);
+                assert(obj instanceof oasa_object);
                 assert.equal(obj.prop('must'), 'foo1');
                 assert.equal(obj.prop('mandatory'), 'bar1');
                 assert.equal(obj.prop('maybe'), 'baz1');
                 assert.equal(obj.prop('optional'), 'bat1');
+            });
+
+            it('returns an oasa_object with object properties of the source data', function () {
+                let obj = this._schema.interpret(this._data);
+                assert(obj instanceof oasa_object);
+                assert(obj.prop('sub_object') instanceof oasa_object);
+            });
+
+            it('returns an oasa_object with array properties of the source data', function () {
+                let obj = this._schema.interpret(this._data);
+                assert(obj instanceof oasa_object);
+                console.log(obj);
+                assert(obj.prop('sub_array') instanceof Array);
+            });
+
+            it('returns an oasa_object with array properties of the source data', function () {
+                let obj = this._schema.interpret(this._data);
+                assert(obj instanceof oasa_object);
+                assert.equal(typeof obj.prop('sub_bool'), 'boolean');
+            });
+
+            it('returns an oasa_object with number properties of the source data', function () {
+                let obj = this._schema.interpret(this._data);
+                assert(obj instanceof oasa_object);
+                assert.equal(typeof obj.prop('sub_num'), 'number');
             });
         });
     });
@@ -202,6 +279,9 @@ describe('oasa_schema', function () {
                         'mandatory': {'type': 'string'},
                         'maybe': {'type': 'string'},
                         'optional': {'type': 'string'},
+                        'sub_object': {'type': 'object'},
+                        'sub_array': {'type': 'array'},
+                        'sub_bool': {'type': 'boolean'},
                     },
                 },
             };

@@ -1,10 +1,10 @@
 # openapi-spec-agent [![Build Status](https://travis-ci.org/mwri/openapi-spec-agent.svg?branch=master)](https://travis-ci.org/mwri/openapi-spec-agent) [![Coverage Status](https://coveralls.io/repos/github/mwri/openapi-spec-agent/badge.svg?branch=master)](https://coveralls.io/github/mwri/openapi-spec-agent?branch=master)
 
-Parses an OpenAPI 3.0 specification into an object hierarchy, resolving references
-transparently to present a uniform interface. Also helps prepare actual HTTP requests
-for given operations (see the [oasa_operation](#oasa_operation) request method) and
-subsume response data into objects, or arrays of objects, according to the relevant
-schema.
+Parses an OpenAPI 3.0 specification, either for analysing the specification, its
+operations, schemas, etc, or for helping to prepare actual HTTP requests for given
+operations (see the [oasa_operation](#oasa_operation) request method) and subsuming
+response data into objects, or arrays of objects, according to the relevant schema.
+References are resolved transparently to present a uniform interface.
 
 ## Contents
 
@@ -29,21 +29,11 @@ Load a YAML file is loaded from the local filesystem, parsed to a structure
 and then passed to the openapi-spec-agent spec constructor:
 
 ```javascript
-let js_yaml  = require('js-yaml');
-let oasa_spec = require('openapi-spec-agent').oasa_spec;
+const fs        = require('fs');
+const js_yaml   = require('js-yaml');
+const oasa_spec = require('openapi-spec-agent').oasa_spec;
 
-let spec = new oasa_spec(load_yaml_file('./some_openapi3_spec.yml'));
-
-async function load_yaml_file (path) {
-    return new Promise((res, rej) => {
-        fs.readFile(path, 'utf8', function (err, data) {
-            if (err)
-                rej(err);
-
-            res(js_yaml.safeLoad(data, 'utf8'));
-        });
-    });
-}
+const spec = new oasa_spec(js_yaml.safeLoad(fs.readFileSync('./some_openapi3_spec.yml')));
 ```
 
 Now you can call various functions on the `spec` object, fmr example
@@ -71,7 +61,29 @@ transparently to make the interface the same regardless.
 
 ### oasa_spec
 
-The `oasa_spec` class represents the whole specification.
+The `oasa_spec` class represents the whole specification. There are two
+parameters, first and mandatory is the specification, for example you could
+load a YAML file, parse it and create the specification like this:
+
+```javascript
+const fs        = require('fs');
+const js_yaml   = require('js-yaml');
+const oasa_spec = require('openapi-spec-agent').oasa_spec;
+
+const spec = new oasa_spec(js_yaml.safeLoad(fs.readFileSync('./some_openapi3_spec.yml')));
+```
+
+The second, optional parameter is an options object, with one
+option, `debug`, supported. Setting `debug` to `true` will enable some
+logging (to the console), or you can set it to a function like this:
+
+```javascript
+const spec = new oasa_spec(spec_struct, {
+  'debug': function (level, msg) {
+    my_log(msg);
+  },
+});
+```
 
 #### Methods
 
@@ -320,10 +332,25 @@ Interpret some data in the context of the schema. What this means is that if
 you make an API call which returns some sort of object, and you have a schema
 (a `oasa_schema` object) for the response of that API call, then you can pass
 the response data to the `interpret` function and it will return an `oasa_object`
-object. If the API response is an array, then of course the schema will be for
-an array too and `interpret` will return an array of `oasa_object` objects.
-
+object. If the API response is an array of objects, and the schema is an array
+of objects too, then `interpret` will return an array of `oasa_object` objects.
 See [oasa_object](#oasa_object) later.
+
+Objects, arrays, booleans, numbers and strings are supported types.
+
+Note that interpret is very unforgiving if your schema is incomplete or incorrect!
+If data is missing then check the schema, and specified correctly. If you turn
+on debug (see [oasa_spec](#oasa_spec)) the logging will inform you that data is
+being lost like this. Although this might seem annoying, you don't HAVE to use
+interpret; there's nothing stopping you using the raw response, but doing so
+keeps you honest, your schema will be better for it, and possibly any other
+OpenAPI tooling you use may then work better too.
+
+Schemas without types are, as per the OpenAPI specification, are matchable to
+any data, but such data will not be parsed into [oasa_object](#oasa_object)
+objects, but is included raw (i.e. the property value may be an `Object`
+instead). Of course over use of typeless schemas is a great way of escaping
+the above mentioned honesty sadly...
 
 ### oasa_property
 

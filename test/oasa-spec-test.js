@@ -1,4 +1,5 @@
 const assert = require('assert');
+const sinon = require('sinon');
 
 const oasa_spec      = require('./../lib/oasa-spec.js').oasa_spec;
 const oasa_schema    = require('./../lib/oasa-schema.js').oasa_schema;
@@ -51,6 +52,42 @@ describe('oasa_spec', function () {
             assert(new oasa_spec({'openapi': '3.0.0', 'servers': [{'url': 'some_url'}]}) instanceof oasa_spec);
         });
 
+        it('throws if debug is string or number', function () {
+            assert.throws(() => new oasa_spec(this._min_sample_oasd, {'debug': 1}));
+            assert.throws(() => new oasa_spec(this._min_sample_oasd, {'debug': 'foobar'}));
+        });
+
+        describe('with debug enabled (default logger)', function () {
+            beforeEach(function () {
+                this._log_stub = sinon.stub(console, 'log');
+                this._warn_stub = sinon.stub(console, 'warn');
+                this._error_stub = sinon.stub(console, 'error');
+            });
+
+            afterEach(function () {
+                this._log_stub.restore();
+                this._warn_stub.restore();
+                this._error_stub.restore();
+            });
+
+            it('info dispatched to console.log', function () {
+                let spec = new oasa_spec(this._min_sample_oasd, {'debug': true});
+                spec._logger('info', 'info msg');
+                assert(this._log_stub.calledWith('info msg'));
+            });
+
+            it('warn dispatched to console.warn', function () {
+                let spec = new oasa_spec(this._min_sample_oasd, {'debug': true});
+                spec._logger('warn', 'warn msg');
+                assert(this._warn_stub.calledWith('warn msg'));
+            });
+
+            it('error dispatched to console.error', function () {
+                let spec = new oasa_spec(this._min_sample_oasd, {'debug': true});
+                spec._logger('error', 'error msg');
+                assert(this._error_stub.calledWith('error msg'));
+            });
+        });
     });
 
     describe('servers', function () {
