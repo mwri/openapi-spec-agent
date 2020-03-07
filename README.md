@@ -384,6 +384,9 @@ Returns the example value, of `undefined` if there isn't one.
 
 Returns the schema (an `oasa_schema` object) of the property.
 
+##### read_only
+
+Returns true if the propert is read only, or false otherwise.
 
 ### oasa_object
 
