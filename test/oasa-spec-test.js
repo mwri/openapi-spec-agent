@@ -6,6 +6,7 @@ const oasa_schema    = require('./../lib/oasa-schema.js').oasa_schema;
 const oasa_reqbody   = require('./../lib/oasa-reqbody.js').oasa_reqbody;
 const oasa_secscheme = require('./../lib/oasa-secscheme.js').oasa_secscheme;
 const oasa_operation = require('./../lib/oasa-operation.js').oasa_operation;
+const oasa_object    = require('./../lib/oasa-object.js').oasa_object;
 
 
 describe('oasa_spec', function () {
@@ -290,6 +291,44 @@ describe('oasa_spec', function () {
 
         it('returns the specified operation', function () {
             assert.equal(this._spec.named_operation('get_it').id(), 'get_it');
+        });
+    });
+
+    describe('make_object', function () {
+        beforeEach(function () {
+            this._oasd = {
+                'openapi': '3.0.0',
+                'components': {
+                    'schemas': {
+                        'some_obj': {'type': 'object', 'properties': {'foo': {'type': 'string'}}},
+                        'other_obj': {'type': 'object', 'properties': {'baz': {'type': 'string'}}},
+                    },
+                },
+            };
+            this._spec = new oasa_spec(this._oasd);
+            this._some_schema = this._spec.resolve_ref('#/components/schemas/some_obj');
+            this._other_schema = this._spec.resolve_ref('#/components/schemas/other_obj');
+        });
+
+        it('returns object given schema and data', function () {
+            assert(this._spec.make_object({'foo': 'bar'}, {'schema': this._some_schema}) instanceof oasa_object);
+            assert.equal(this._spec.make_object({'foo': 'bar'}, {'schema': this._some_schema}).schema(), this._some_schema);
+            assert.equal(this._spec.make_object({'foo': 'bar'}, {'schema': this._some_schema}).prop('foo'), 'bar');
+            assert.equal(this._spec.make_object({'baz': 'bar'}, {'schema': this._some_schema}).prop('baz'), undefined);
+        });
+
+        it('returns object given schema ref and data', function () {
+            assert(this._spec.make_object({'baz': 'bar'}, {'schema_ref': '#/components/schemas/other_obj'}) instanceof oasa_object);
+            assert.deepEqual(this._spec.make_object({'baz': 'bar'}, {'schema_ref': '#/components/schemas/other_obj'}).schema(), this._other_schema);
+            assert.equal(this._spec.make_object({'baz': 'bar'}, {'schema_ref': '#/components/schemas/other_obj'}).prop('baz'), 'bar');
+            assert.equal(this._spec.make_object({'foo': 'bar'}, {'schema_ref': '#/components/schemas/other_obj'}).prop('foo'), undefined);
+        });
+
+        it('returns object given schema ref and data', function () {
+            assert(this._spec.make_object({'baz': 'bar'}, {'schema_name': 'other_obj'}) instanceof oasa_object);
+            assert.deepEqual(this._spec.make_object({'baz': 'bar'}, {'schema_name': 'other_obj'}).schema(), this._other_schema);
+            assert.equal(this._spec.make_object({'baz': 'bar'}, {'schema_name': 'other_obj'}).prop('baz'), 'bar');
+            assert.equal(this._spec.make_object({'foo': 'bar'}, {'schema_name': 'other_obj'}).prop('foo'), undefined);
         });
     });
 });

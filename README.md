@@ -109,6 +109,23 @@ does not exist.
 let op = spec.named_operation('get_the_thing');
 ```
 
+##### make_object
+
+Creates an `oasa_object` object, from the data, using the specified schema
+from the specification. This is useful for creating objects outside of the
+context of an actual OpenAPI request, if you come by the data some other
+way, for example if an object's data is passed via a websocket, or if you
+load the data from the filesystem. Either way, if you want to normalise
+back to an `oasa_object` object, use this.
+
+The schema can be passed, or specified by full reference of short name:
+
+```javascript
+let obj1 = spec.make_object({'foo': 'bar', 'baz': 'bat'}, {'schema': schema});
+let obj2 = spec.make_object({'foo': 'bar', 'baz': 'bat'}, {'schema_ref': '#/components/schemas/obj1'});
+let obj3 = spec.make_object({'foo': 'bar', 'baz': 'bat'}, {'schema_name': 'obj2'});
+```
+
 ##### resolve_ref
 
 Takes a reference (for example *#/components/schemas/Pet*) and
