@@ -265,7 +265,7 @@ describe('oasa_schema', function () {
         });
     });
 
-    describe('with array schema', function () {
+    describe('with array of objects schema', function () {
         beforeEach(function () {
             this._spec = new oasa_spec(min_sample_oasd);
             this._schema_oasd = {
@@ -381,26 +381,64 @@ describe('oasa_schema', function () {
                 let objlist = this._schema.interpret(this._data);
                 assert(objlist instanceof Array);
                 assert.equal(objlist.length, this._data.length);
+
                 for (const obj of objlist)
                     assert(obj instanceof oasa_object);
-            });
-
-            it('returns an array of oasa_object objects', function () {
-                let objlist = this._schema.interpret(this._data);
-                assert(objlist instanceof Array);
-                assert.equal(objlist.length, this._data.length);
-
-                assert(objlist[0] instanceof oasa_object);
                 assert.equal(objlist[0].prop('must'), 'foo1');
                 assert.equal(objlist[0].prop('mandatory'), 'bar1');
                 assert.equal(objlist[0].prop('maybe'), 'baz1');
                 assert.equal(objlist[0].prop('optional'), 'bat1');
-
-                assert(objlist[1] instanceof oasa_object);
                 assert.equal(objlist[1].prop('must'), 'foo2');
                 assert.equal(objlist[1].prop('mandatory'), 'bar2');
                 assert.equal(objlist[1].prop('maybe'), 'baz2');
                 assert.equal(objlist[1].prop('optional'), 'bat2');
+            });
+        });
+    });
+
+    describe('with array of strings schema', function () {
+        beforeEach(function () {
+            this._spec = new oasa_spec(min_sample_oasd);
+            this._schema_oasd = {
+                'type': 'array',
+                'items': {'type': 'string'},
+            };
+        });
+
+        describe('of', function () {
+            describe('returns oasa_schema object for which', function () {
+                beforeEach(function () {
+                    this._schema = new oasa_schema(this._spec, this._schema_oasd);
+                });
+
+                describe('type', function () {
+                    it('when items subschema is an object, returns "string"', function () {
+                        let of = this._schema.of();
+                        assert.equal(of.type(), 'string');
+                    });
+                });
+            });
+        });
+
+        describe('interpret', function () {
+            this.beforeEach(function () {
+                this._schema = new oasa_schema(this._spec, this._schema_oasd);
+                this._data = ['foo', 'bar'];
+            });
+
+            it('returns an array', function () {
+                assert(this._schema.interpret(this._data) instanceof Array);
+            });
+
+            it('returns an array of strings', function () {
+                let objlist = this._schema.interpret(this._data);
+                assert(objlist instanceof Array);
+                assert.equal(objlist.length, this._data.length);
+
+                for (const obj of objlist)
+                    assert.equal(typeof obj, 'string');
+                assert.equal(objlist[0], 'foo');
+                assert.equal(objlist[1], 'bar');
             });
         });
     });
