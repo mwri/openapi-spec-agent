@@ -81,6 +81,12 @@ describe('oasa_schema', function () {
             schema.interpret({});
             assert(!logfn.called);
         });
+
+        it('returns null when data is null', function () {
+            this._spec = new oasa_spec(min_sample_oasd);
+            let schema = new oasa_schema(this._spec, {'type': 'object'});
+            schema.interpret(null);
+        });
     });
 
     describe('with object schema', function () {
