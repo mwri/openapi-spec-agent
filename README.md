@@ -424,6 +424,11 @@ let val = obj.prop('path');
 
 Return the schema of the object.
 
+##### serialise
+
+Return a straight forward serialised version of the object, consisting of objects, arrays
+and scalars, no longer an `oasa_object`, suitable for JSON encoding.
+
 ### oasa_reqbody
 
 The `oasa_reqbody` object represents a request body.

@@ -31,6 +31,14 @@ describe('oasa_schema', function () {
                         'suboptional': {'type': 'string'},
                     },
                 },
+                'list1': {
+                    'type': 'array',
+                    'items': {'type': 'string'}
+                },
+                'list2': {
+                    'type': 'array',
+                    'items': {'type': 'object', 'properties': {'baz': {'type': 'string'}}}
+                },
             },
         };
         this._schema = new oasa_schema(this._spec, this._schema_oasd);
@@ -89,7 +97,7 @@ describe('oasa_schema', function () {
             });
 
             it('returns an oasa_object object', function () {0
-                //assert(this._obj.prop('subobject') instanceof oasa_object);
+                assert(this._obj.prop('subobject') instanceof oasa_object);
             });
 
             it('returns an oasa_object with properties from the source (sub) data', function () {0
@@ -103,6 +111,19 @@ describe('oasa_schema', function () {
         it('returns the schema', function () {
             let obj = new oasa_object(this._spec, this._data, this._schema);
             assert.equal(obj.schema(), this._schema);
+        });
+    });
+
+    describe('serialise', function () {
+        it('returns the serialised structure', function () {
+            this._data.subobject = {
+                'submust': 'subfoo3',
+                'submandatory': 'subbar3',
+            };
+            this._data.list1 = ['foo', 'bar'];
+            this._data.list2 = [{'baz': 'bat'}];
+            let obj = new oasa_object(this._spec, this._data, this._schema);
+            assert.deepEqual(obj.serialise(), this._data);
         });
     });
 });
