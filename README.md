@@ -420,6 +420,16 @@ Return the value of the named property. For example:
 let val = obj.prop('path');
 ```
 
+##### has
+
+Return true if the object has a value (though it could be undefined, null or
+any other falsy value).
+
+```javascript
+if (obj.has('error'))
+  alert('error set');
+```
+
 ##### schema
 
 Return the schema of the object.

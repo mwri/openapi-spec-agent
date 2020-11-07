@@ -39,6 +39,15 @@ describe('oasa_schema', function () {
                     'type': 'array',
                     'items': {'type': 'object', 'properties': {'baz': {'type': 'string'}}}
                 },
+                'int1': {
+                    'type': 'integer',
+                },
+                'num1': {
+                    'type': 'number',
+                },
+                'bool1': {
+                    'type': 'boolean',
+                },
             },
         };
         this._schema = new oasa_schema(this._spec, this._schema_oasd);
@@ -124,6 +133,34 @@ describe('oasa_schema', function () {
             this._data.list2 = [{'baz': 'bat'}];
             let obj = new oasa_object(this._spec, this._data, this._schema);
             assert.deepEqual(obj.serialise(), this._data);
+        });
+
+        it('serialised structure does not drop falsy values', function () {
+            this._data.subobject = {
+                'submust': undefined,
+                'submandatory': null,
+            };
+            this._data.int1 = 0;
+            this._data.num1 = 0;
+            this._data.bool1 = false;
+            let obj = new oasa_object(this._spec, this._data, this._schema);
+            assert.deepEqual(obj.serialise(), this._data);
+        });
+    });
+
+    describe('has', function () {
+        it('returns true if data of any sort is present', function () {
+            let obj = new oasa_object(this._spec, {'int1': 1, 'num1': 0, 'bool1': false}, this._schema);
+            assert(obj.has('int1'));
+            assert(obj.has('num1'));
+            assert(obj.has('bool1'));
+        });
+
+        it('returns false if data is not present', function () {
+            let obj = new oasa_object(this._spec, {}, this._schema);
+            assert(!obj.has('int1'));
+            assert(!obj.has('num1'));
+            assert(!obj.has('bool1'));
         });
     });
 });
