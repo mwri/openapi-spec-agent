@@ -448,6 +448,122 @@ describe('oasa_schema', function () {
             });
         });
     });
+
+    describe('with additionalProperties', function () {
+        describe('with specified schema', function () {
+            beforeEach(function () {
+                this._spec = new oasa_spec(min_sample_oasd);
+                this._schema_oasd = {
+                    'type': 'object',
+                    'properties': {
+                        'particular': {'type': 'string'},
+                    },
+                    'additionalProperties': {
+                        'type': 'object',
+                        'required': ['must', 'mandatory'],
+                        'properties': {
+                            'must': {'type': 'string'},
+                            'mandatory': {'type': 'string'},
+                            'maybe': {'type': 'string'},
+                            'optional': {'type': 'string'},
+                            'sub_object': {'type': 'object'},
+                            'sub_array': {'type': 'array'},
+                            'sub_bool': {'type': 'boolean'},
+                            'sub_num': {'type': 'number'},
+                        },
+                    },
+                };
+            });
+
+            describe('additional_prop', function () {
+                it('returns property', function () {
+                    let schema = new oasa_schema(this._spec, this._schema_oasd);
+                    assert(schema.additional_prop() instanceof oasa_property);
+                });
+
+                it('returns property with schema with expected sub properties', function () {
+                    let schema = new oasa_schema(this._spec, this._schema_oasd);
+                    assert.deepEqual(
+                        schema.additional_prop().schema().all_props().map((p) => p.name()).sort(),
+                        ['must', 'mandatory', 'maybe', 'optional', 'sub_object', 'sub_array', 'sub_bool', 'sub_num'].sort()
+                    );
+                });
+            });
+
+            describe('named_prop', function () {
+                it('given fixed/normal property name, returns a property', function () {
+                    let schema = new oasa_schema(this._spec, this._schema_oasd);
+                    assert(schema.named_prop('particular') instanceof oasa_property);
+                });
+
+                it('given fixed/normal property name, returns a property with its name', function () {
+                    let schema = new oasa_schema(this._spec, this._schema_oasd);
+                    assert(schema.named_prop('particular') instanceof oasa_property);
+                    assert.equal(schema.named_prop('particular').name(), 'particular');
+                });
+
+                it('given some other, random property name, returns a property with its name', function () {
+                    let schema = new oasa_schema(this._spec, this._schema_oasd);
+                    assert(schema.named_prop('random') instanceof oasa_property);
+                    assert.equal(schema.named_prop('random').name(), 'random');
+                });
+            });
+        });
+    });
+
+    describe('turned off', function () {
+        beforeEach(function () {
+            this._spec = new oasa_spec(min_sample_oasd);
+            this._schema_oasd = {
+                'type': 'object',
+                'properties': {
+                    'particular': {'type': 'string'},
+                },
+                'additionalProperties': false,
+            };
+        });
+
+        describe('additional_prop', function () {
+            it('returns undefined', function () {
+                let schema = new oasa_schema(this._spec, this._schema_oasd);
+                assert.equal(schema.additional_prop(), undefined);
+            });
+        });
+
+        describe('named_prop', function () {
+            it('given some other, random property name, returns undefined', function () {
+                let schema = new oasa_schema(this._spec, this._schema_oasd);
+                assert.equal(schema.named_prop('random'), undefined);
+            });
+        });
+    });
+
+    describe('allowed / turned on, but with no schema', function () {
+        beforeEach(function () {
+            this._spec = new oasa_spec(min_sample_oasd);
+            this._schema_oasd = {
+                'type': 'object',
+                'properties': {
+                    'particular': {'type': 'string'},
+                },
+                'additionalProperties': true,
+            };
+        });
+
+        describe('additional_prop', function () {
+            it('returns property', function () {
+                let schema = new oasa_schema(this._spec, this._schema_oasd);
+                assert(schema.additional_prop() instanceof oasa_property);
+            });
+        });
+
+        describe('named_prop', function () {
+            it('given some other, random property name, returns undefined', function () {
+                let schema = new oasa_schema(this._spec, this._schema_oasd);
+                assert(schema.named_prop('random') instanceof oasa_property);
+            });
+        });
+    });
 });
 
 

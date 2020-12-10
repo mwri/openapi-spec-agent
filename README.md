@@ -336,6 +336,18 @@ there is no such property.
 let prop = schema.named_prop('prop_name');
 ```
 
+##### additional_prop
+
+Return the property of additional properties, if additional properties
+are allowed by the schema (`undefined` if not).
+
+```javascript
+let prop = schema.additional_prop();
+```
+
+This will be the same property returned by `named_prop` if the propery
+name given is not one explicitly specified.
+
 ##### of
 
 If the schema is an array type, this returns another schema, for the
