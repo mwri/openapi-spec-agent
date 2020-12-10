@@ -1,7 +1,7 @@
 {
   "name": "openapi-spec-agent",
   "description": "OpenAPI Specification agent, for analysing a specification, assisting with requests and subsuming response data",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "author": {
     "name": "Michael Wright",
     "email": "mjw@methodanalysis.com"
