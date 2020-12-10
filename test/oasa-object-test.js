@@ -146,6 +146,23 @@ describe('oasa_schema', function () {
             let obj = new oasa_object(this._spec, this._data, this._schema);
             assert.deepEqual(obj.serialise(), this._data);
         });
+
+        it('serialises all properties when additionalProperties present', function () {
+            schema = new oasa_schema(this._spec, {
+                'type': 'object',
+                'additionalProperties': {
+                    'type': 'string',
+                },
+            });
+
+            data = {
+                'wibble': 'wobble',
+                'wobble': 'wibble',
+            };
+
+            let obj = new oasa_object(this._spec, data, schema);
+            assert.deepEqual(obj.serialise(), data);
+        });
     });
 
     describe('has', function () {
